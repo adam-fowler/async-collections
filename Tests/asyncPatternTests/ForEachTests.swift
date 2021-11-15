@@ -124,7 +124,7 @@ final class ForEachTests: XCTestCase {
     func testAsyncForEachCancellation() async throws {
         let count = Count(1)
 
-        let primes = [2,3,5,7,11,13]
+        let primes = Array((1...8).reversed())
         let task = Task {
             try await primes.asyncForEach {
                 try await Task.sleep(nanoseconds: numericCast($0) * 1000 * 100)
@@ -141,7 +141,7 @@ final class ForEachTests: XCTestCase {
     func testConcurrentForEachCancellation() async throws {
         let count = Count(1)
 
-        let primes = [2,3,5,7,11,13]
+        let primes = Array((1...8).reversed())
         let task = Task {
             try await primes.asyncForEach {
                 try await Task.sleep(nanoseconds: numericCast($0) * 1000 * 100)
@@ -161,6 +161,10 @@ actor Count {
 
     init(_ value: Int = 0) {
         self.value = value
+    }
+
+    func set(_ rhs: Int) {
+        self.value = rhs
     }
 
     @discardableResult func add(_ rhs: Int) -> Int {

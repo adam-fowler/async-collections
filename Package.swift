@@ -9,8 +9,13 @@ let package = Package(
     products: [
         .library(name: "asyncPatterns", targets: ["asyncPatterns"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-collections", from: "1.0.0"),
+    ],
     targets: [
-        .target(name: "asyncPatterns"),
+        .target(name: "asyncPatterns", dependencies: [
+            .product(name: "Collections", package: "swift-collections"),
+        ]),
         .testTarget(name: "asyncPatternTests", dependencies: ["asyncPatterns"]),
     ]
 )

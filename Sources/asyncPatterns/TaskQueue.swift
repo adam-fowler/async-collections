@@ -74,7 +74,7 @@ public actor TaskQueue<Result> {
         let result = try await function()
         // once task is complete if there are tasks on the queue then
         // initiate task from queue.
-        if let t = queue.popFirst() {
+        if let t = queue.popFirst(), !Task.isCancelled {
             Task(priority: priority) {
                 self.numInProgress -= 1
                 await self.performTask(t)

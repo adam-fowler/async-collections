@@ -8,9 +8,9 @@ import Collections
 /// tasks running at one point in time e.g.
 /// ```
 /// let queue = TaskQueue(maxConcurrent: 8)
-/// let result = array.concurrentMap { element in
-///     queue.add { element in
-///         asyncOperation(element)
+/// let result = await array.concurrentMap { element in
+///     await queue.add { element in
+///         await asyncOperation(element)
 ///     }
 /// }
 /// ```
@@ -29,7 +29,7 @@ public actor TaskQueue<Result> {
     /// number of tasks in progress
     var numInProgress: Int
     /// maximum concurrent tasks that can run at any one time
-    let maxConcurrent: Int
+    let maxConcurrentTasks: Int
     /// priority of queued tasks
     let priority: TaskPriority?
 
@@ -37,10 +37,10 @@ public actor TaskQueue<Result> {
     /// - Parameters:
     ///   - maxConcurrent: Maximum number of concurrent tasks queue allows
     ///   - priority: priority of queued tasks
-    public init(maxConcurrent: Int = 4, priority: TaskPriority? = nil) {
+    public init(maxConcurrentTasks: Int = 4, priority: TaskPriority? = nil) {
         self.queue = .init()
         self.numInProgress = 0
-        self.maxConcurrent = maxConcurrent
+        self.maxConcurrentTasks = maxConcurrentTasks
         self.priority = priority
     }
 
@@ -49,7 +49,7 @@ public actor TaskQueue<Result> {
     /// - Parameter body: Body of task function
     /// - Returns: Result of task
     public func add(_ body: @escaping TaskFunc) async throws -> Result {
-        if numInProgress < maxConcurrent {
+        if numInProgress < maxConcurrentTasks {
             return try await performTask(body)
         } else {
             return try await withUnsafeThrowingContinuation { cont in

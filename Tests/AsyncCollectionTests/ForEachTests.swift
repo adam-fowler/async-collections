@@ -1,5 +1,5 @@
 import XCTest
-import asyncPatterns
+import AsyncCollections
 
 final class ForEachTests: XCTestCase {
     func testAsyncForEach() async {

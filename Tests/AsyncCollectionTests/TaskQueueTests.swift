@@ -1,9 +1,9 @@
 import XCTest
-import asyncPatterns
+import AsyncCollections
 
 final class TaskQueueTests: XCTestCase {
     func testTaskQueue() async throws {
-        let queue = TaskQueue<Int>(maxConcurrent: 32)
+        let queue = TaskQueue<Int>(maxConcurrentTasks: 32)
         let array = Array((0..<8000))
         let result = try await array.concurrentMap { value -> Int in
             try await queue.add {
@@ -19,7 +19,7 @@ final class TaskQueueTests: XCTestCase {
         let count = Count(0)
         let maxCount = Count(0)
 
-        let queue = TaskQueue<Int>(maxConcurrent: 8)
+        let queue = TaskQueue<Int>(maxConcurrentTasks: 8)
         let array = Array((0..<800))
         let result = try await array.concurrentMap { value -> Int in
             try await queue.add {
@@ -40,7 +40,7 @@ final class TaskQueueTests: XCTestCase {
     func testCancellation() async throws {
         let count = Count(0)
 
-        let queue = TaskQueue<Int>(maxConcurrent: 16)
+        let queue = TaskQueue<Int>(maxConcurrentTasks: 16)
         let array = Array((1...200).reversed())
         let task = Task {
             _ = try await array.concurrentMap { value -> Int in

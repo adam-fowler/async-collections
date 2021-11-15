@@ -1,5 +1,5 @@
 import XCTest
-import asyncPatterns
+import AsyncCollections
 
 final class MapTests: XCTestCase {
     func testAsyncMap() async throws {

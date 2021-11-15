@@ -4,18 +4,18 @@
 import PackageDescription
 
 let package = Package(
-    name: "async-patterns",
+    name: "async-collections",
     platforms: [.macOS(.v12), .iOS(.v15), .tvOS(.v15), .watchOS(.v8)],
     products: [
-        .library(name: "asyncPatterns", targets: ["asyncPatterns"]),
+        .library(name: "AsyncCollections", targets: ["AsyncCollections"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-collections", from: "1.0.0"),
     ],
     targets: [
-        .target(name: "asyncPatterns", dependencies: [
+        .target(name: "AsyncCollections", dependencies: [
             .product(name: "Collections", package: "swift-collections"),
         ]),
-        .testTarget(name: "asyncPatternTests", dependencies: ["asyncPatterns"]),
+        .testTarget(name: "AsyncCollectionTests", dependencies: ["AsyncCollections"]),
     ]
 )

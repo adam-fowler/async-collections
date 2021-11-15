@@ -1,7 +1,16 @@
 
 extension Sequence {
+    /// Returns an array containing the results of mapping the given async closure over
+    /// the sequence’s elements.
+    ///
+    /// The closure calls are made serially. The next call is only made once the previous call
+    /// has finished. Returns once the closure has run on all the elements of the Sequence
+    /// or when the closure throws an error.
+    /// - Parameter transform: An async  mapping closure. transform accepts an
+    ///     element of this sequence as its parameter and returns a transformed value of
+    ///     the same or of a different type.
+    /// - Returns: An array containing the transformed elements of this sequence.
     public func asyncMap<T>(_ transform: @escaping (Element) async throws -> T) async rethrows -> [T] {
-        // Code for collating results copied from Sequence.map
         let initialCapacity = underestimatedCount
         var result = ContiguousArray<T>()
         result.reserveCapacity(initialCapacity)
@@ -12,15 +21,28 @@ extension Sequence {
         return Array(result)
     }
 
-    public func concurrentMap<T>(_ transform: @escaping (Element) async throws -> T) async rethrows -> [T] {
+    /// Returns an array containing the results of mapping the given async closure over
+    /// the sequence’s elements.
+    ///
+    /// This differs from `asyncMap` in that it uses a `TaskGroup` to run the transform
+    /// closure for all the elements of the Sequence. This allows all the transform closures
+    /// to run concurrently instead of serially. Returns only when the closure has been run
+    /// on all the elements of the Sequence.
+    /// - Parameters:
+    ///   - priority: Task priority for tasks in TaskGroup
+    ///   - transform: An async  mapping closure. transform accepts an
+    ///     element of this sequence as its parameter and returns a transformed value of
+    ///     the same or of a different type.
+    /// - Returns: An array containing the transformed elements of this sequence.
+    public func concurrentMap<T>(priority: TaskPriority? = nil, _ transform: @escaping (Element) async throws -> T) async rethrows -> [T] {
         try await withThrowingTaskGroup(of: (Int, T).self) { group in
             self.enumerated().forEach { element in
-                group.addTask {
+                group.addTask(priority: priority) {
                     let result = try await transform(element.1)
                     return (element.0, result)
                 }
             }
-            // Code for collating results copied from Sequence.map
+            // Code for collating results copied from Sequence.map in Swift codebase
             let initialCapacity = underestimatedCount
             var result = ContiguousArray<(Int, T)>()
             result.reserveCapacity(initialCapacity)
@@ -34,6 +56,7 @@ extension Sequence {
                 result.append(element)
             }
 
+            // construct final array and fill in elements
             return Array(unsafeUninitializedCapacity: result.count) { buffer, count in
                 for value in result {
                     buffer[value.0] = value.1

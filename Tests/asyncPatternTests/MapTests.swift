@@ -58,4 +58,71 @@ final class MapTests: XCTestCase {
         XCTAssertGreaterThan(maxValue, 1)
     }
 
+    func testAsyncMapErrorThrowing() async throws {
+        struct TaskError: Error {}
+
+        do {
+            _ = try await (1...8).asyncMap { element -> Int in
+                if element == 4 {
+                    throw TaskError()
+                }
+                return element
+            }
+            XCTFail("Should have failed")
+        } catch is TaskError {
+        } catch {
+            XCTFail("Error: \(error)")
+        }
+    }
+
+    func testConcurrentMapErrorThrowing() async throws {
+        struct TaskError: Error {}
+
+        do {
+            _ = try await (1...8).concurrentMap { element -> Int in
+                if element == 4 {
+                    throw TaskError()
+                }
+                return element
+            }
+            XCTFail("Should have failed")
+        } catch is TaskError {
+        } catch {
+            XCTFail("Error: \(error)")
+        }
+    }
+
+    func testAsyncMapCancellation() async throws {
+        let count = Count(1)
+
+        let array = Array((1...8).reversed())
+        let task = Task {
+            _ = try await array.asyncMap { value -> Int in
+                try await Task.sleep(nanoseconds: numericCast(value) * 1000 * 100)
+                await count.mul(value)
+                return value
+            }
+        }
+        try await Task.sleep(nanoseconds: 15 * 1000 * 100)
+        task.cancel()
+        let value = await count.value
+        XCTAssertNotEqual(value, 1*2*3*4*5*6*7*8)
+    }
+
+    func testConcurrentMapCancellation() async throws {
+        let count = Count(1)
+
+        let array = Array((1...8).reversed())
+        let task = Task {
+            _ = try await array.concurrentMap { value -> Int in
+                try await Task.sleep(nanoseconds: numericCast(value) * 1000 * 100)
+                await count.mul(value)
+                return value
+            }
+        }
+        try await Task.sleep(nanoseconds: 1 * 1000 * 100)
+        task.cancel()
+        let value = await count.value
+        XCTAssertNotEqual(value, 1*2*3*4*5*6*7*8)
+    }
 }

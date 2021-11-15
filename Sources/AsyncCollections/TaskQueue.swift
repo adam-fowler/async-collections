@@ -16,12 +16,12 @@ import Collections
 /// ```
 public actor TaskQueue<Result> {
     /// Task closure
-    public typealias TaskFunc = () async throws -> Result
+    public typealias TaskFunc = @Sendable () async throws -> Result
 
     /// Task details stored in queue, body of operation and continuation
     /// to resume when task completes
     struct TaskDetails {
-        let body: () async throws -> Result
+        let body: TaskFunc
         let continuation: UnsafeContinuation<Result, Error>
     }
     /// task queue

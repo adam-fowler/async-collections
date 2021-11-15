@@ -1,12 +1,12 @@
 
-extension Sequence {
+extension Sequence where Element: Sendable {
     /// Run async closure for each member of a Sequence
     ///
     /// The closure calls are made serially. The next call is only made once the previous call
     /// has finished. Returns once the closure has run on all the elements of the Sequence
     /// or when the closure throws an error
     /// - Parameter body: Closure to be called for each element
-    public func asyncForEach(_ body: @escaping (Element) async throws -> Void) async rethrows {
+    public func asyncForEach(_ body: @Sendable @escaping (Element) async throws -> Void) async rethrows {
         for element in self {
             try await body(element)
         }
@@ -20,7 +20,7 @@ extension Sequence {
     /// - Parameters:
     ///   - priority: Task priority for tasks in TaskGroup
     ///   - body: Closure to be called for each element
-    public func concurrentForEach(priority: TaskPriority? = nil, _ body: @escaping (Element) async throws -> Void) async rethrows {
+    public func concurrentForEach(priority: TaskPriority? = nil, _ body: @Sendable @escaping (Element) async throws -> Void) async rethrows {
         try await withThrowingTaskGroup(of: Void.self) { group in
             self.forEach { element in
                 group.addTask(priority: priority) {

@@ -35,7 +35,7 @@ extension Sequence where Element: Sendable {
     ///     the same or of a different type.
     /// - Returns: An array containing the transformed elements of this sequence.
     public func concurrentMap<T: Sendable>(priority: TaskPriority? = nil, _ transform: @Sendable @escaping (Element) async throws -> T) async rethrows -> [T] {
-        try await withThrowingTaskGroup(of: (Int, T).self) { group in
+        let result: ContiguousArray<(Int, T)> = try await withThrowingTaskGroup(of: (Int, T).self) { group in
             self.enumerated().forEach { element in
                 group.addTask(priority: priority) {
                     let result = try await transform(element.1)
@@ -55,14 +55,14 @@ extension Sequence where Element: Sendable {
             while let element = try await group.next() {
                 result.append(element)
             }
-
-            // construct final array and fill in elements
-            return Array(unsafeUninitializedCapacity: result.count) { buffer, count in
-                for value in result {
-                    buffer[value.0] = value.1
-                }
-                count = result.count
+            return result
+        }
+        // construct final array and fill in elements
+        return Array<T>(unsafeUninitializedCapacity: result.count) { buffer, count in
+            for value in result {
+                (buffer.baseAddress! + value.0).initialize(to: value.1)
             }
+            count = result.count
         }
     }
 }

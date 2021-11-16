@@ -22,6 +22,16 @@ final class MapTests: XCTestCase {
         XCTAssertEqual(result, array)
     }
 
+    func testConcurrentMapWithString() async throws {
+        let array = Array((0..<800))
+        let result = try await array.concurrentMap { value -> String in
+            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100000))
+            return String(value)
+        }
+
+        XCTAssertEqual(result, array.map { String($0) })
+    }
+
     func testConcurrentAsyncMap() async throws {
         let count = Count(0)
         let maxCount = Count(0)

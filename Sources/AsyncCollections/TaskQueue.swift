@@ -30,14 +30,14 @@ public actor TaskQueue<Result> {
     var numInProgress: Int
     /// maximum concurrent tasks that can run at any one time
     let maxConcurrentTasks: Int
-    /// priority of queued tasks
+    /// priority of tasks
     let priority: TaskPriority?
 
     /// Create task queue
     /// - Parameters:
     ///   - maxConcurrent: Maximum number of concurrent tasks queue allows
     ///   - priority: priority of queued tasks
-    public init(maxConcurrentTasks: Int = 4, priority: TaskPriority? = nil) {
+    public init(maxConcurrentTasks: Int, priority: TaskPriority? = nil) {
         self.queue = .init()
         self.numInProgress = 0
         self.maxConcurrentTasks = maxConcurrentTasks
@@ -73,15 +73,15 @@ public actor TaskQueue<Result> {
 
     /// perform task
     func performTask(_ function: TaskFunc) async rethrows -> Result {
-        //self.numInProgress += 1
         let result = try await function()
         // once task is complete if there are tasks on the queue then
-        // initiate task from queue.
+        // initiate next task from queue.
         if let t = queue.popFirst(), !Task.isCancelled {
             Task(priority: priority) {
                 await self.performTask(t)
             }
         } else {
+            assert(self.numInProgress > 0)
             self.numInProgress -= 1
         }
         return result

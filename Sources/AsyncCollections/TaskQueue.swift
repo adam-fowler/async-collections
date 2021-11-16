@@ -49,10 +49,13 @@ public actor TaskQueue<Result> {
     /// - Parameter body: Body of task function
     /// - Returns: Result of task
     public func add(_ body: @escaping TaskFunc) async throws -> Result {
-        if numInProgress < maxConcurrentTasks {
-            return try await performTask(body)
-        } else {
-            return try await withUnsafeThrowingContinuation { cont in
+        return try await withUnsafeThrowingContinuation { cont in
+            if numInProgress < maxConcurrentTasks {
+                numInProgress += 1
+                Task(priority: priority) {
+                    await self.performTask(.init(body: body, continuation: cont))
+                }
+            } else {
                 queue.append(.init(body: body, continuation: cont))
             }
         }
@@ -70,13 +73,12 @@ public actor TaskQueue<Result> {
 
     /// perform task
     func performTask(_ function: TaskFunc) async rethrows -> Result {
-        self.numInProgress += 1
+        //self.numInProgress += 1
         let result = try await function()
         // once task is complete if there are tasks on the queue then
         // initiate task from queue.
         if let t = queue.popFirst(), !Task.isCancelled {
             Task(priority: priority) {
-                self.numInProgress -= 1
                 await self.performTask(t)
             }
         } else {

@@ -1,11 +1,11 @@
-import XCTest
 import AsyncCollections
+import XCTest
 
 final class MapTests: XCTestCase {
     func testAsyncMap() async throws {
-        let array = Array((0..<80))
+        let array = Array(0..<80)
         let result = try await array.asyncMap { value -> Int in
-            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100000))
+            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100_000))
             return value
         }
 
@@ -13,9 +13,9 @@ final class MapTests: XCTestCase {
     }
 
     func testConcurrentMap() async throws {
-        let array = Array((0..<800))
+        let array = Array(0..<800)
         let result = try await array.concurrentMap { value -> Int in
-            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100000))
+            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100_000))
             return value
         }
 
@@ -23,24 +23,24 @@ final class MapTests: XCTestCase {
     }
 
     func testConcurrentMapWithString() async throws {
-        let array = Array((0..<800))
+        let array = Array(0..<800)
         let result = try await array.concurrentMap { value -> String in
-            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100000))
+            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100_000))
             return String(value)
         }
 
         XCTAssertEqual(result, array.map { String($0) })
     }
 
-    func testConcurrentAsyncMap() async throws {
+    func testAsyncMapConcurrency() async throws {
         let count = Count(0)
         let maxCount = Count(0)
 
-        let array = Array((0..<80))
+        let array = Array(0..<80)
         let result = try await array.asyncMap { value -> Int in
             let c = await count.add(1)
             await maxCount.max(c)
-            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100000))
+            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100_000))
             await count.add(-1)
             return value
         }
@@ -50,15 +50,15 @@ final class MapTests: XCTestCase {
         XCTAssertEqual(maxValue, 1)
     }
 
-    func testConcurrentConcurrentMap() async throws {
+    func testConcurrentMapConcurrency() async throws {
         let count = Count(0)
         let maxCount = Count(0)
 
-        let array = Array((0..<800))
+        let array = Array(0..<800)
         let result = try await array.concurrentMap { value -> Int in
             let c = await count.add(1)
             await maxCount.max(c)
-            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100000))
+            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100_000))
             await count.add(-1)
             return value
         }
@@ -68,11 +68,30 @@ final class MapTests: XCTestCase {
         XCTAssertGreaterThan(maxValue, 1)
     }
 
+    func testConcurrentMapConcurrencyWithMaxTasks() async throws {
+        let count = Count(0)
+        let maxCount = Count(0)
+
+        let array = Array(0..<800)
+        let result = try await array.concurrentMap(maxConcurrentTasks: 4) { value -> Int in
+            let c = await count.add(1)
+            await maxCount.max(c)
+            try await Task.sleep(nanoseconds: UInt64.random(in: 1000..<100_000))
+            await count.add(-1)
+            return value
+        }
+
+        XCTAssertEqual(result, array)
+        let maxValue = await maxCount.value
+        XCTAssertLessThanOrEqual(maxValue, 4)
+        XCTAssertGreaterThan(maxValue, 1)
+    }
+
     func testAsyncMapErrorThrowing() async throws {
         struct TaskError: Error {}
 
         do {
-            _ = try await (1...8).asyncMap { element -> Int in
+            _ = try await(1...8).asyncMap { element -> Int in
                 if element == 4 {
                     throw TaskError()
                 }
@@ -89,7 +108,7 @@ final class MapTests: XCTestCase {
         struct TaskError: Error {}
 
         do {
-            _ = try await (1...8).concurrentMap { element -> Int in
+            _ = try await(1...8).concurrentMap { element -> Int in
                 if element == 4 {
                     throw TaskError()
                 }
@@ -116,7 +135,7 @@ final class MapTests: XCTestCase {
         try await Task.sleep(nanoseconds: 15 * 1000 * 100)
         task.cancel()
         let value = await count.value
-        XCTAssertNotEqual(value, 1*2*3*4*5*6*7*8)
+        XCTAssertNotEqual(value, 1 * 2 * 3 * 4 * 5 * 6 * 7 * 8)
     }
 
     func testConcurrentMapCancellation() async throws {
@@ -133,6 +152,6 @@ final class MapTests: XCTestCase {
         try await Task.sleep(nanoseconds: 1 * 1000 * 100)
         task.cancel()
         let value = await count.value
-        XCTAssertNotEqual(value, 1*2*3*4*5*6*7*8)
+        XCTAssertNotEqual(value, 1 * 2 * 3 * 4 * 5 * 6 * 7 * 8)
     }
 }

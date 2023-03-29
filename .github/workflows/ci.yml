@@ -26,7 +26,7 @@ jobs:
     - name: Convert coverage files
       run: |
         xcrun llvm-cov export -format "lcov" \
-          .build/debug/hummingbirdPackageTests.xctest/Contents/MacOs/hummingbirdPackageTests \
+          .build/debug/async-collectionsPackageTests.xctest/Contents/MacOs/async-collectionsPackageTests \
           -ignore-filename-regex="\/Tests\/" \
           -ignore-filename-regex="\/Benchmarks\/" \
           -instr-profile=.build/debug/codecov/default.profdata > info.lcov
@@ -55,7 +55,7 @@ jobs:
     - name: Convert coverage files
       run: |
         llvm-cov export -format="lcov" \
-          .build/debug/hummingbirdPackageTests.xctest \
+          .build/debug/async-collectionsPackageTests.xctest \
           -ignore-filename-regex="\/Tests\/" \
           -ignore-filename-regex="\/Benchmarks\/" \
           -instr-profile .build/debug/codecov/default.profdata > info.lcov

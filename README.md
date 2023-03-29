@@ -25,7 +25,7 @@ try await array.concurrentForEach(maxConcurrentTasks: 4) {
 }
 ```
 
-## AsyncMap
+## Map
 
 Return an array transformed by an async function. 
 ```swift

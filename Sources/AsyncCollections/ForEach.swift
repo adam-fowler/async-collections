@@ -41,12 +41,14 @@ extension Sequence where Element: Sendable {
     ///   - body: Closure to be called for each element
     public func concurrentForEach(maxConcurrentTasks: Int, priority: TaskPriority? = nil, _ body: @Sendable @escaping (Element) async throws -> Void) async rethrows {
         try await withThrowingTaskGroup(of: Void.self) { group in
-            let semaphore = AsyncSemaphore(value: maxConcurrentTasks)
+            var count = 0
             for element in self {
-                try await semaphore.wait()
+                count += 1
+                if count > maxConcurrentTasks {
+                    try await group.next()
+                }
                 group.addTask(priority: priority) {
                     try await body(element)
-                    semaphore.signal()
                 }
             }
             try await group.waitForAll()

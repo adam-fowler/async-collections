@@ -1,3 +1,4 @@
+import Atomics
 import Collections
 import Foundation
 
@@ -10,11 +11,12 @@ import Foundation
 /// lock by decrementing the semaphore counter inside the withTaskCancellationHandler
 /// function.
 public final class AsyncSemaphore: @unchecked Sendable {
+    static let idGenerator = ManagedAtomic(0)
     struct Suspension: Sendable {
         let continuation: UnsafeContinuation<Void, Error>
-        let id: UUID
+        let id: Int
 
-        init(_ continuation: UnsafeContinuation<Void, Error>, id: UUID) {
+        init(_ continuation: UnsafeContinuation<Void, Error>, id: Int) {
             self.continuation = continuation
             self.id = id
         }
@@ -63,7 +65,7 @@ public final class AsyncSemaphore: @unchecked Sendable {
 
     ///  Wait for or decrement a semaphore
     public func wait() async throws {
-        let id = UUID()
+        let id = Self.idGenerator.loadThenWrappingIncrement(by: 1, ordering: .relaxed)
         try await withTaskCancellationHandler {
             self.lock()
             self.value -= 1
@@ -102,8 +104,9 @@ public final class AsyncSemaphore: @unchecked Sendable {
 extension AsyncSemaphore {
     // used in tests
     func getValue() -> Int {
-        return self._lock.withLock {
-            self.value
-        }
+        self.lock()
+        let value = self.value
+        self.unlock()
+        return value
     }
 }

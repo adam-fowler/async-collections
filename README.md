@@ -18,8 +18,14 @@ try await array.concurrentForEach {
     try await asyncProcess($0)
 }
 ```
+You can manage the number of tasks running at any one time with the `maxConcurrentTasks` parameter
+```swift
+try await array.concurrentForEach(maxConcurrentTasks: 4) {
+    try await asyncProcess($0)
+}
+```
 
-## Map
+## AsyncMap
 
 Return an array transformed by an async function. 
 ```swift
@@ -27,17 +33,13 @@ let result = await array.asyncMap {
     return await asyncTransform($0)
 }
 ```
-Similar to `asyncForEach` there is a `concurrentMap` as well which will run the closures concurrently.
 
-## TaskQueue
-
-Use a `TaskQueue` to manage the number of concurrent tasks when processing a large sequence. 
+Similar to `asyncForEach` there are versions of `asyncMap` that runs the transforms concurrently.
 
 ```swift
-let queue = TaskQueue<Int>(maxConcurrentTasks: 8)
-let result = try await array.concurrentMap { value -> Int in
-    try await queue.add {
-        return await asyncTransform(value)
-    }
+let result = await array.concurrentMap(maxConcurrentTasks: 8) {
+    return await asyncTransform($0)
 }
 ```
+
+

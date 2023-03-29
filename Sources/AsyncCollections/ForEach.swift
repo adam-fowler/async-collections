@@ -31,4 +31,25 @@ extension Sequence where Element: Sendable {
         }
     }
 
+    /// Run async closure for each member of a sequence
+    ///
+    /// This differs from `asyncForEach` in that it uses a `TaskGroup` to run closure
+    /// for all the elements of the Sequence. So all the closures can run concurrently. Returns
+    /// only when the closure has been run on all the elements of the Sequence.
+    /// - Parameters:
+    ///   - priority: Task priority for tasks in TaskGroup
+    ///   - body: Closure to be called for each element
+    public func concurrentForEach(maxConcurrentTasks: Int, priority: TaskPriority? = nil, _ body: @Sendable @escaping (Element) async throws -> Void) async rethrows {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let semaphore = AsyncSemaphore(value: maxConcurrentTasks)
+            self.forEach { element in
+                try await semaphore.wait()
+                group.addTask(priority: priority) {
+                    try await body(element)
+                    semaphore.signal()
+                }
+            }
+            try await group.waitForAll()
+        }
+    }
 }

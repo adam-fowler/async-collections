@@ -5,12 +5,12 @@ import PackageDescription
 
 let package = Package(
     name: "async-collections",
-    platforms: [.macOS(.v12), .iOS(.v15), .tvOS(.v15), .watchOS(.v8)],
+    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)],
     products: [
         .library(name: "AsyncCollections", targets: ["AsyncCollections"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-collections", from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-collections.git", from: "1.0.0"),
     ],
     targets: [
         .target(name: "AsyncCollections", dependencies: [

@@ -14,6 +14,7 @@ import Collections
 ///     }
 /// }
 /// ```
+@available(*, deprecated, message: "Use concurrentMap(maxConcurrentTasks:priority:transform:)")
 public actor TaskQueue<Result> {
     /// Task closure
     public typealias TaskFunc = @Sendable () async throws -> Result
@@ -24,6 +25,7 @@ public actor TaskQueue<Result> {
         let body: TaskFunc
         let continuation: UnsafeContinuation<Result, Error>
     }
+
     /// task queue
     var queue: Deque<TaskDetails>
     /// number of tasks in progress
@@ -77,7 +79,7 @@ public actor TaskQueue<Result> {
         // once task is complete if there are tasks on the queue then
         // initiate next task from queue.
         if let t = queue.popFirst(), !Task.isCancelled {
-            Task(priority: priority) {
+            Task(priority: self.priority) {
                 await self.performTask(t)
             }
         } else {

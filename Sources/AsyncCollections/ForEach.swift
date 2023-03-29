@@ -42,7 +42,7 @@ extension Sequence where Element: Sendable {
     public func concurrentForEach(maxConcurrentTasks: Int, priority: TaskPriority? = nil, _ body: @Sendable @escaping (Element) async throws -> Void) async rethrows {
         try await withThrowingTaskGroup(of: Void.self) { group in
             let semaphore = AsyncSemaphore(value: maxConcurrentTasks)
-            self.forEach { element in
+            for element in self {
                 try await semaphore.wait()
                 group.addTask(priority: priority) {
                     try await body(element)

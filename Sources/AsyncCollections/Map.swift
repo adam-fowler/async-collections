@@ -10,7 +10,7 @@ extension Sequence where Element: Sendable {
     ///     element of this sequence as its parameter and returns a transformed value of
     ///     the same or of a different type.
     /// - Returns: An array containing the transformed elements of this sequence.
-    public func asyncMap<T: Sendable>(_ transform: @Sendable @escaping (Element) async throws -> T) async rethrows -> [T] {
+    public func asyncMap<T>(_ transform: @Sendable (Element) async throws -> T) async rethrows -> [T] {
         let initialCapacity = underestimatedCount
         var result = ContiguousArray<T>()
         result.reserveCapacity(initialCapacity)

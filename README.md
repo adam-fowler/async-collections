@@ -42,4 +42,19 @@ let result = await array.concurrentMap(maxConcurrentTasks: 8) {
 }
 ```
 
+## Filter
 
+Return a filtered array transformed by an async function. 
+```swift
+let result = await array.asyncFilter {
+    return await asyncTransform($0)
+}
+```
+
+Similar to `asyncForEach` there are versions of `asyncFilter` that runs the transforms concurrently.
+
+```swift
+let result = await array.concurrentFilter(maxConcurrentTasks: 8) {
+    return await asyncTransform($0)
+}
+```

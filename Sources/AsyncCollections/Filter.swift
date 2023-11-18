@@ -48,17 +48,9 @@ extension Sequence where Element: Sendable {
                 }
             }
             // Code for collating results copied from Sequence.map in Swift codebase
-            let initialCapacity = underestimatedCount
             var result = ContiguousArray<(Int, Element)>()
-            result.reserveCapacity(initialCapacity)
 
-            // Add elements up to the initial capacity without checking for regrowth.
-            for _ in 0..<initialCapacity {
-                if let enumerated = try await group.next()! {
-                    result.append(enumerated)
-                }
-            }
-            // Add remaining elements, if any.
+            // Add all the elements.
             while let next = try await group.next() {
                 if let enumerated = next {
                     result.append(enumerated)
@@ -89,10 +81,7 @@ extension Sequence where Element: Sendable {
         let result: ContiguousArray<(Int, Element)> = try await withThrowingTaskGroup(
             of: (Int, Element)?.self
         ) { group in
-            // Code for collating results copied from Sequence.map in Swift codebase
-            let initialCapacity = underestimatedCount
             var result = ContiguousArray<(Int, Element)>()
-            result.reserveCapacity(initialCapacity)
 
             for (index, element) in self.enumerated() {
                 if index >= maxConcurrentTasks {

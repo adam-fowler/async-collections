@@ -15,8 +15,15 @@ extension Sequence where Element: Sendable {
         var result = ContiguousArray<T>()
         result.reserveCapacity(initialCapacity)
 
-        for element in self {
-            try await result.append(transform(element))
+        var iterator = self.makeIterator()
+
+        // Add elements up to the initial capacity without checking for regrowth.
+        for _ in 0..<initialCapacity {
+            result.append(try await transform(iterator.next()!))
+        }
+        // Add remaining elements, if any.
+        while let element = iterator.next() {
+            result.append(try await transform(element))
         }
         return Array(result)
     }
@@ -34,12 +41,12 @@ extension Sequence where Element: Sendable {
     ///     element of this sequence as its parameter and returns a transformed value of
     ///     the same or of a different type.
     /// - Returns: An array containing the transformed elements of this sequence.
-    public func concurrentMap<T: Sendable>(priority: TaskPriority? = nil, _ transform: @Sendable @escaping (Element) async throws -> T) async rethrows -> [T] {
+    public func concurrentMap<T>(priority: TaskPriority? = nil, _ transform: @Sendable @escaping (Element) async throws -> T) async rethrows -> [T] {
         let result: ContiguousArray<(Int, T)> = try await withThrowingTaskGroup(of: (Int, T).self) { group in
-            self.enumerated().forEach { element in
+            for (index, element) in self.enumerated() {
                 group.addTask(priority: priority) {
-                    let result = try await transform(element.1)
-                    return (element.0, result)
+                    let result = try await transform(element)
+                    return (index, result)
                 }
             }
             // Code for collating results copied from Sequence.map in Swift codebase
@@ -52,8 +59,8 @@ extension Sequence where Element: Sendable {
                 try await result.append(group.next()!)
             }
             // Add remaining elements, if any.
-            while let element = try await group.next() {
-                result.append(element)
+            while let enumerated = try await group.next() {
+                result.append(enumerated)
             }
             return result
         }
@@ -80,7 +87,7 @@ extension Sequence where Element: Sendable {
     ///     element of this sequence as its parameter and returns a transformed value of
     ///     the same or of a different type.
     /// - Returns: An array containing the transformed elements of this sequence.
-    public func concurrentMap<T: Sendable>(maxConcurrentTasks: Int, priority: TaskPriority? = nil, _ transform: @Sendable @escaping (Element) async throws -> T) async rethrows -> [T] {
+    public func concurrentMap<T>(maxConcurrentTasks: Int, priority: TaskPriority? = nil, _ transform: @Sendable @escaping (Element) async throws -> T) async rethrows -> [T] {
         let result: ContiguousArray<(Int, T)> = try await withThrowingTaskGroup(of: (Int, T).self) { group in
             var results = ContiguousArray<(Int, T)>()
             for (index, element) in self.enumerated() {
@@ -96,8 +103,8 @@ extension Sequence where Element: Sendable {
             }
 
             // Add remaining elements, if any.
-            while let result = try await group.next() {
-                results.append(result)
+            while let enumerated = try await group.next() {
+                results.append(enumerated)
             }
             return results
         }

@@ -62,7 +62,6 @@ extension Sequence where Element: Sendable {
         return result.sorted(by: { $0.0 < $1.0 }).map(\.1)
     }
 
-    /// Returns an array containing the results of mapping the given async closure over
     /// Returns an array containing, in order, the elements of the sequence
     /// that satisfy the given predicate.
     ///

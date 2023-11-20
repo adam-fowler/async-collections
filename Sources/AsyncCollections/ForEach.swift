@@ -6,7 +6,7 @@ extension Sequence where Element: Sendable {
     /// has finished. Returns once the closure has run on all the elements of the Sequence
     /// or when the closure throws an error
     /// - Parameter body: Closure to be called for each element
-    public func asyncForEach(_ body: @Sendable @escaping (Element) async throws -> Void) async rethrows {
+    public func asyncForEach(_ body: @Sendable (Element) async throws -> Void) async rethrows {
         for element in self {
             try await body(element)
         }

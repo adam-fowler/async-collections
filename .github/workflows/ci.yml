@@ -20,7 +20,7 @@ jobs:
     runs-on: macOS-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: SPM tests
       run: swift test --enable-code-coverage
     - name: Convert coverage files
@@ -39,16 +39,16 @@ jobs:
     strategy:
       matrix:
         image:
-          - 'swift:5.5'
-          - 'swift:5.6'
-          - 'swift:5.7'
-          - 'swiftlang/swift:nightly-5.8-jammy'
-    
-    container:
-      image: ${{ matrix.image }}
+          - swift:5.7-jammy
+          - swift:5.8-jammy
+          - swift:5.9-jammy
+          - swiftlang/swift:nightly-5.10-jammy
+          - swiftlang/swift:nightly-main-jammy
+
+    container: ${{ matrix.image }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Test
       run: |
         swift test --enable-code-coverage

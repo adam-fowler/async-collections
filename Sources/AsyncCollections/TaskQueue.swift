@@ -15,7 +15,7 @@ import Collections
 /// }
 /// ```
 @available(*, deprecated, message: "Use concurrentMap(maxConcurrentTasks:priority:transform:)")
-public actor TaskQueue<Result> {
+public actor TaskQueue<Result: Sendable> {
     /// Task closure
     public typealias TaskFunc = @Sendable () async throws -> Result
 

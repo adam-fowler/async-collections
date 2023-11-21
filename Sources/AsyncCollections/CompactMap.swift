@@ -33,7 +33,7 @@ extension Sequence where Element: Sendable {
     /// Use this method to receive an array of non-optional values when your
     /// transformation produces an optional value.
     ///
-    /// This differs from `asyncFilter` in that it uses a `TaskGroup` to run the transform
+    /// This differs from `asyncCompactMap` in that it uses a `TaskGroup` to run the transform
     /// closure for all the elements of the Sequence. This allows all the transform closures
     /// to run concurrently instead of serially. Returns only when the closure has been run
     /// on all the elements of the Sequence.
@@ -77,7 +77,7 @@ extension Sequence where Element: Sendable {
     /// Use this method to receive an array of non-optional values when your
     /// transformation produces an optional value.
     ///
-    /// This differs from `asyncFilter` in that it uses a `TaskGroup` to run the transform
+    /// This differs from `asyncCompactMap` in that it uses a `TaskGroup` to run the transform
     /// closure for all the elements of the Sequence. This allows all the transform closures
     /// to run concurrently instead of serially. Returns only when the closure has been run
     /// on all the elements of the Sequence.

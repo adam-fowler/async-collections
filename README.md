@@ -46,7 +46,7 @@ let result = await array.concurrentMap(maxConcurrentTasks: 8) {
 
 Return a concatenated array transformed by an async function that returns a sequence. 
 ```swift
-let result: [MySequence.Element] = await array.asyncMap { value -> [MySequence] in
+let result: [MySequence.Element] = await array.asyncMap { value -> MySequence in
     return await asyncTransform($0)
 }
 ```
@@ -54,7 +54,7 @@ let result: [MySequence.Element] = await array.asyncMap { value -> [MySequence] 
 Similar to `asyncForEach` there are versions of `asyncFlatMap` that runs the transforms concurrently.
 
 ```swift
-let result: [MySequence.Element] = await array.concurrentMap(maxConcurrentTasks: 8) { value -> [MySequence] in
+let result: [MySequence.Element] = await array.concurrentMap(maxConcurrentTasks: 8) { value -> MySequence in
     return await asyncTransform($0)
 }
 ```

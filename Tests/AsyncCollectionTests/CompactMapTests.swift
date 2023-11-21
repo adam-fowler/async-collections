@@ -178,7 +178,7 @@ final class CompactCompactMapTests: XCTestCase {
             _ = try await array.asyncCompactMap { value -> Int? in
                 try await Task.sleep(nanoseconds: numericCast(value) * 1000 * 100)
                 await count.mul(value)
-                return value
+                return Bool.random() ? value : nil
             }
         }
         try await Task.sleep(nanoseconds: 15 * 1000 * 100)
@@ -195,7 +195,7 @@ final class CompactCompactMapTests: XCTestCase {
             _ = try await array.concurrentCompactMap { value -> Int? in
                 try await Task.sleep(nanoseconds: numericCast(value) * 1000 * 100)
                 await count.mul(value)
-                return value
+                return Bool.random() ? value : nil
             }
         }
         try await Task.sleep(nanoseconds: 1 * 1000 * 100)

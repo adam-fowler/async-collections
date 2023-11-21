@@ -135,7 +135,7 @@ final class FilterTests: XCTestCase {
             _ = try await array.asyncFilter { value -> Bool in
                 try await Task.sleep(nanoseconds: numericCast(value) * 1000 * 100)
                 await count.mul(value)
-                return Bool.random()
+                return true
             }
         }
         try await Task.sleep(nanoseconds: 15 * 1000 * 100)
@@ -152,7 +152,7 @@ final class FilterTests: XCTestCase {
             _ = try await array.concurrentFilter { value -> Bool in
                 try await Task.sleep(nanoseconds: numericCast(value) * 1000 * 100)
                 await count.mul(value)
-                return Bool.random()
+                return true
             }
         }
         try await Task.sleep(nanoseconds: 1 * 1000 * 100)

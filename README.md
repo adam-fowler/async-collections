@@ -42,6 +42,23 @@ let result = await array.concurrentMap(maxConcurrentTasks: 8) {
 }
 ```
 
+## Compact Map
+
+Return a non-optional array transformed by an async function returning optional results. 
+```swift
+let result: [MyType] = await array.asyncCompactMap { value -> MyType? in 
+    return await asyncTransform(value)
+}
+```
+
+Similar to `asyncForEach` there are versions of `asyncCompactMap` that runs the transforms concurrently.
+
+```swift
+let result: [MyType] = await array.concurrentCompactMap(maxConcurrentTasks: 8) { value -> MyType? in
+    return await asyncTransform(value)
+}
+```
+
 ## Filter
 
 Return a filtered array transformed by an async function. 

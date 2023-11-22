@@ -178,11 +178,20 @@ final class FlatMapTests: XCTestCase {
     }
 }
 
-/// Test type that only conforms to `Sequence`.
+/// A base `Sequence` type.
 private struct MereSequence<Element: Hashable>: Sequence {
+    /// Use an unordered underlying sequence, no need to assume order.
     let underlying: Set<Element>
 
-    var underestimatedCount: Int { self.underlying.count }
+    /// Don't always return `self.underlying.count` to truly test the property as "underestimated".
+    /// This will test the parts where there is a `for-loop`, followed by a `while let` and
+    /// the `while let` is supposed to accumulate any remaining elements that are
+    /// after `underestimatedCount` in the sequence's order.
+    var underestimatedCount: Int {
+        self.underlying.count == 0 ? 0 :
+        Bool.random() ? (self.underlying.count / 2) :
+        self.underlying.count
+    }
 
     struct Iterator: IteratorProtocol {
         var base: Set<Element>.Iterator

@@ -203,7 +203,7 @@ private struct MereSequence<Element: Hashable>: Sequence {
         Iterator(base: self.underlying.makeIterator())
     }
 
-    init<S>(_ sequence: S) where S: Sequence, S.Element == Element {
+    init(_ sequence: some Sequence<Element>) {
         self.underlying = .init(sequence)
     }
 }

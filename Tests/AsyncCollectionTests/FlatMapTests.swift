@@ -188,9 +188,7 @@ private struct MereSequence<Element: Hashable>: Sequence {
     /// the `while let` is supposed to accumulate any remaining elements that are
     /// after `underestimatedCount` in the sequence's order.
     var underestimatedCount: Int {
-        self.underlying.count == 0 ? 0 :
-        Bool.random() ? (self.underlying.count / 2) :
-        self.underlying.count
+        Bool.random() ? (self.underlying.count / 2) : self.underlying.count
     }
 
     struct Iterator: IteratorProtocol {

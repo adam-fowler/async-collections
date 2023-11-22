@@ -33,11 +33,14 @@ final class AsyncSemaphoreTests: XCTestCase {
     func testWaitDelayedSignal() async throws {
         await withThrowingTaskGroup(of: Void.self) { group in
             let semaphore = AsyncSemaphore()
+            let semaphore2 = AsyncSemaphore()
             group.addTask {
+                semaphore2.signal()
                 try await semaphore.wait()
             }
             group.addTask {
-                try await Task.sleep(nanoseconds: 100_000)
+                try await semaphore2.wait()
+                try await Task.sleep(nanoseconds: 10_000)
                 let rt = semaphore.signal()
                 XCTAssertEqual(rt, true)
             }
@@ -47,14 +50,19 @@ final class AsyncSemaphoreTests: XCTestCase {
     func testDoubleWaitSignal() async throws {
         await withThrowingTaskGroup(of: Void.self) { group in
             let semaphore = AsyncSemaphore()
+            let semaphore2 = AsyncSemaphore()
             group.addTask {
+                semaphore2.signal()
                 try await semaphore.wait()
             }
             group.addTask {
+                semaphore2.signal()
                 try await semaphore.wait()
             }
             group.addTask {
-                try await Task.sleep(nanoseconds: 100_000)
+                try await semaphore2.wait()
+                try await semaphore2.wait()
+                try await Task.sleep(nanoseconds: 10_000)
                 let rt = semaphore.signal()
                 XCTAssertEqual(rt, true)
                 let rt2 = semaphore.signal()

@@ -39,17 +39,17 @@ extension Sequence where Element: Sendable {
     /// on all the elements of the Sequence.
     /// - Parameters:
     ///   - priority: Task priority for tasks in TaskGroup
-    ///   - isIncluded: An async closure that takes an element of the
+    ///   - transform: An async closure that takes an element of the
     ///   sequence as its argument and returns a Boolean value indicating
     ///   whether the element should be included in the returned array.
-    /// - Returns: An array of the elements that `isIncluded` allowed.
-    public func concurrentCompactMap<T: Sendable>(priority: TaskPriority? = nil, _ isIncluded: @Sendable @escaping (Element) async throws -> T?) async rethrows -> [T] {
+    /// - Returns: An array of the elements that `transform` allowed.
+    public func concurrentCompactMap<T: Sendable>(priority: TaskPriority? = nil, _ transform: @Sendable @escaping (Element) async throws -> T?) async rethrows -> [T] {
         let result: ContiguousArray<(Int, T)> = try await withThrowingTaskGroup(
             of: (Int, T)?.self
         ) { group in
             for (index, element) in self.enumerated() {
                 group.addTask(priority: priority) {
-                    if let transformed = try await isIncluded(element) {
+                    if let transformed = try await transform(element) {
                         return (index, transformed)
                     } else {
                         return nil
@@ -84,11 +84,11 @@ extension Sequence where Element: Sendable {
     /// - Parameters:
     ///   - maxConcurrentTasks: Maximum number of tasks to running at the same time
     ///   - priority: Task priority for tasks in TaskGroup
-    ///   - isIncluded: An async closure that takes an element of the
+    ///   - transform: An async closure that takes an element of the
     ///   sequence as its argument and returns a Boolean value indicating
     ///   whether the element should be included in the returned array.
-    /// - Returns: An array of the elements that `isIncluded` allowed.
-    public func concurrentCompactMap<T: Sendable>(maxConcurrentTasks: Int, priority: TaskPriority? = nil, _ isIncluded: @Sendable @escaping (Element) async throws -> T?) async rethrows -> [T] {
+    /// - Returns: An array of the elements that `transform` allowed.
+    public func concurrentCompactMap<T: Sendable>(maxConcurrentTasks: Int, priority: TaskPriority? = nil, _ transform: @Sendable @escaping (Element) async throws -> T?) async rethrows -> [T] {
         let result: ContiguousArray<(Int, T)> = try await withThrowingTaskGroup(
             of: (Int, T)?.self
         ) { group in
@@ -101,7 +101,7 @@ extension Sequence where Element: Sendable {
                     }
                 }
                 group.addTask(priority: priority) {
-                    if let transformed = try await isIncluded(element) {
+                    if let transformed = try await transform(element) {
                         return (index, transformed)
                     } else {
                         return nil
